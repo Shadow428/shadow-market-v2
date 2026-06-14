@@ -147,7 +147,12 @@ export default function Marketplace({ user, cart, onCartChange, onAuthSuccess }:
 
       {/* ── Payment modal ─────────────────────────── */}
       {modal === 'payment' && pending && (
-        <PaymentModal product={pending} onClose={handleClose} onSuccess={handlePaymentSuccess} />
+        <PaymentModal
+          product={pending}
+          customerEmail={user?.email ?? 'guest@shadow.gg'}
+          onClose={handleClose}
+          onSuccess={handlePaymentSuccess}
+        />
       )}
 
       {/* ── Toasts ────────────────────────────────── */}

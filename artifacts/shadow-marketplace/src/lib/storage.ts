@@ -16,13 +16,17 @@ export interface Order {
   productName: string;
   amount: number;
   transactionId: string;
+  customerEmail: string;
   status: 'Pending' | 'Verified';
+  /* Set when admin delivers account credentials */
+  accountUsername?: string;
+  accountPassword?: string;
+  deliveredAt?: string;
   createdAt: string;
 }
 
 const PRODUCTS_KEY = 'sm_products';
 const ORDERS_KEY   = 'sm_orders';
-const ADMIN_KEY    = 'sm_admin_pass';
 
 /* ── Default seed products ──────────────────────────────── */
 const DEFAULT_PRODUCTS: Product[] = [
@@ -87,20 +91,22 @@ export function addOrder(order: Omit<Order, 'id' | 'createdAt'>): Order {
   return newOrder;
 }
 
-export function markOrderVerified(id: string): void {
+/** Verify payment AND attach account credentials in one step */
+export function deliverOrder(
+  id: string,
+  accountUsername: string,
+  accountPassword: string,
+): void {
   const orders = getOrders().map(o =>
-    o.id === id ? { ...o, status: 'Verified' as const } : o
+    o.id === id
+      ? {
+          ...o,
+          status: 'Verified' as const,
+          accountUsername,
+          accountPassword,
+          deliveredAt: new Date().toISOString(),
+        }
+      : o,
   );
   localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-}
-
-/* ── Admin ──────────────────────────────────────────────── */
-const DEFAULT_ADMIN_PASS = 'shadow123';
-
-export function getAdminPassword(): string {
-  return localStorage.getItem(ADMIN_KEY) ?? DEFAULT_ADMIN_PASS;
-}
-
-export function checkAdminPassword(pass: string): boolean {
-  return pass === getAdminPassword();
 }
