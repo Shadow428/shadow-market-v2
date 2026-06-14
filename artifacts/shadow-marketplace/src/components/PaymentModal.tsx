@@ -1,6 +1,5 @@
 /* ──────────────────────────────────────────────────────────
    PaymentModal.tsx — UPI QR payment flow modal
-   Accepts customerEmail so it's stored with the order.
    ────────────────────────────────────────────────────────── */
 import { useState, useEffect } from 'react';
 import type { Product } from '@/lib/storage';
@@ -13,19 +12,16 @@ interface Props {
   onSuccess: (orderId: string) => void;
 }
 
-/* Replace with your real UPI ID */
-const UPI_ID   = 'shadowmarketplace@upi';
-const UPI_NAME = 'Shadow Marketplace';
+const UPI_ID   = 'ekaspalsingh@fam';
+const UPI_NAME = 'Ekaspal Singh';
 
 type Step = 'qr' | 'txid' | 'done';
 
 export default function PaymentModal({ product, customerEmail, onClose, onSuccess }: Props) {
-  const [step, setStep]   = useState<Step>('qr');
-  const [txId, setTxId]   = useState('');
+  const [step, setStep]     = useState<Step>('qr');
+  const [txId, setTxId]     = useState('');
   const [txError, setTxError] = useState('');
-
-  const upiUri = `upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${product.price}&cu=INR&tn=${encodeURIComponent('Shadow Marketplace - ' + product.name)}`;
-  const qrUrl  = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&color=9B30FF&bgcolor=0A0A12&data=${encodeURIComponent(upiUri)}`;
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -46,6 +42,13 @@ export default function PaymentModal({ product, customerEmail, onClose, onSucces
     });
     setStep('done');
     onSuccess(order.id);
+  }
+
+  function copyUpiId() {
+    navigator.clipboard.writeText(UPI_ID).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   }
 
   return (
@@ -71,25 +74,53 @@ export default function PaymentModal({ product, customerEmail, onClose, onSucces
         {/* Body */}
         <div className="px-6 py-5 relative z-10">
 
-          {/* QR step */}
+          {/* ── QR step ───────────────────────────── */}
           {step === 'qr' && (
-            <div className="flex flex-col items-center gap-5">
+            <div className="flex flex-col items-center gap-4">
+
+              {/* Amount */}
               <div className="text-center">
                 <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'hsl(270 30% 55%)' }}>Amount to Pay</p>
                 <div className="text-4xl font-black glow-text" style={{ color: 'hsl(270 100% 70%)' }}>₹{product.price}</div>
               </div>
-              <div className="p-3 rounded-xl animate-pulse-glow"
-                style={{ background: 'hsl(240 20% 5%)', border: '1px solid hsl(270 60% 35%)' }}>
-                <img src={qrUrl} alt="UPI QR Code" width={220} height={220} className="rounded-lg block" />
+
+              {/* Real QR image */}
+              <div className="rounded-2xl overflow-hidden animate-pulse-glow"
+                style={{ border: '2px solid hsl(270 60% 35%)', boxShadow: '0 0 30px hsl(270 100% 50% / 0.15)' }}>
+                <img
+                  src="/upi-qr.png"
+                  alt="UPI QR Code — scan with any UPI app"
+                  className="block"
+                  style={{ width: 220, height: 'auto' }}
+                />
               </div>
-              <div className="w-full text-center text-sm rounded-lg py-2 px-4"
-                style={{ background: 'hsl(270 100% 60% / 0.08)', border: '1px solid hsl(270 100% 60% / 0.2)', color: 'hsl(270 60% 75%)' }}>
-                UPI ID: <span className="font-mono font-bold" style={{ color: 'hsl(270 100% 80%)' }}>{UPI_ID}</span>
+
+              {/* UPI ID + copy button */}
+              <div className="w-full flex items-center gap-2 rounded-xl px-4 py-2.5"
+                style={{ background: 'hsl(270 100% 60% / 0.08)', border: '1px solid hsl(270 100% 60% / 0.2)' }}>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs" style={{ color: 'hsl(270 40% 55%)' }}>UPI ID</div>
+                  <div className="font-mono font-bold text-sm truncate" style={{ color: 'hsl(270 100% 82%)' }}>
+                    {UPI_ID}
+                  </div>
+                </div>
+                <button onClick={copyUpiId}
+                  className="shrink-0 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
+                  style={{
+                    background: copied ? 'hsl(145 60% 40% / 0.2)' : 'hsl(270 100% 60% / 0.15)',
+                    border: `1px solid ${copied ? 'hsl(145 60% 50% / 0.4)' : 'hsl(270 100% 60% / 0.3)'}`,
+                    color: copied ? 'hsl(145 70% 55%)' : 'hsl(270 100% 75%)',
+                  }}>
+                  {copied ? '✓ Copied' : 'Copy'}
+                </button>
               </div>
+
+              {/* Email notice */}
               <div className="w-full text-center text-xs rounded-lg py-2 px-4"
                 style={{ background: 'hsl(200 60% 50% / 0.06)', border: '1px solid hsl(200 60% 50% / 0.2)', color: 'hsl(200 60% 65%)' }}>
                 📧 Receipt will be sent to <span className="font-semibold">{customerEmail}</span>
               </div>
+
               {/* App buttons */}
               <div className="w-full">
                 <p className="text-xs text-center mb-2" style={{ color: 'hsl(270 30% 50%)' }}>
@@ -97,14 +128,13 @@ export default function PaymentModal({ product, customerEmail, onClose, onSucces
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { name: 'GPay',     color: '#4285F4', emoji: '🔵', scheme: `tez://upi/pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${product.price}&cu=INR&tn=${encodeURIComponent('Shadow Marketplace - ' + product.name)}` },
-                    { name: 'PhonePe',  color: '#6739B7', emoji: '🟣', scheme: `phonepe://pay?transactionId=SM${Date.now()}&amount=${product.price * 100}&pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}` },
-                    { name: 'Paytm',    color: '#00BAF2', emoji: '🔷', scheme: `paytmmp://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${product.price}&cu=INR` },
+                    { name: 'GPay',    color: '#4285F4', emoji: '🔵', scheme: `tez://upi/pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${product.price}&cu=INR&tn=${encodeURIComponent('Shadow Marketplace - ' + product.name)}` },
+                    { name: 'PhonePe', color: '#6739B7', emoji: '🟣', scheme: `phonepe://pay?transactionId=SM${Date.now()}&amount=${product.price * 100}&pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}` },
+                    { name: 'Paytm',   color: '#00BAF2', emoji: '🔷', scheme: `paytmmp://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${product.price}&cu=INR` },
                   ].map(app => (
                     <a key={app.name} href={app.scheme}
                       className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
-                      style={{ background: `${app.color}18`, border: `1px solid ${app.color}44`, color: app.color }}
-                    >
+                      style={{ background: `${app.color}18`, border: `1px solid ${app.color}44`, color: app.color }}>
                       <span className="text-lg">{app.emoji}</span>
                       {app.name}
                     </a>
@@ -114,13 +144,14 @@ export default function PaymentModal({ product, customerEmail, onClose, onSucces
                   App buttons work on mobile · QR works everywhere
                 </p>
               </div>
+
               <button onClick={() => setStep('txid')} className="btn-primary w-full py-3 rounded-xl text-base">
                 I've Paid →
               </button>
             </div>
           )}
 
-          {/* TxID step */}
+          {/* ── TxID step ─────────────────────────── */}
           {step === 'txid' && (
             <div className="flex flex-col gap-5">
               <div className="text-center">
@@ -132,7 +163,8 @@ export default function PaymentModal({ product, customerEmail, onClose, onSucces
                 <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'hsl(270 60% 65%)' }}>
                   UPI Transaction ID
                 </label>
-                <input type="text" value={txId} onChange={(e) => { setTxId(e.target.value); setTxError(''); }}
+                <input type="text" value={txId}
+                  onChange={(e) => { setTxId(e.target.value); setTxError(''); }}
                   placeholder="e.g. 123456789012"
                   className="input-field w-full px-4 py-3 rounded-lg font-mono text-sm"
                   onKeyDown={(e) => { if (e.key === 'Enter') handlePaid(); }} autoFocus />
@@ -145,7 +177,7 @@ export default function PaymentModal({ product, customerEmail, onClose, onSucces
             </div>
           )}
 
-          {/* Done step */}
+          {/* ── Done step ─────────────────────────── */}
           {step === 'done' && (
             <div className="flex flex-col items-center gap-5 py-4">
               <div className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
