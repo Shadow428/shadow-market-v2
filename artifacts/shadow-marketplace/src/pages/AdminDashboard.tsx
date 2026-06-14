@@ -240,15 +240,41 @@ function ProductsSection({ products, onRefresh }: { products: Product[]; onRefre
 }
 
 /* ── Orders section ─────────────────────────────────────── */
+interface JustDelivered {
+  orderId: string;
+  customerEmail: string;
+  productName: string;
+  accountUsername: string;
+  accountPassword: string;
+}
+
+function buildGmailLink(d: JustDelivered): string {
+  const subject = encodeURIComponent(`Your ${d.productName} — Shadow Marketplace`);
+  const body = encodeURIComponent(
+    `Hi,\n\nYour payment has been verified and your Minecraft account is ready!\n\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+    `Product: ${d.productName}\n` +
+    `Username: ${d.accountUsername}\n` +
+    `Password: ${d.accountPassword}\n` +
+    `━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+    `Please change your password after first login.\n\n` +
+    `Thank you for shopping at Shadow Marketplace!\n` +
+    `— Shadow Market Team`,
+  );
+  return `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(d.customerEmail)}&su=${subject}&body=${body}`;
+}
+
 function OrdersSection({ orders, onRefresh }: { orders: Order[]; onRefresh: () => void }) {
-  const [deliveringId, setDeliveringId] = useState<string | null>(null);
-  const [accUser, setAccUser]           = useState('');
-  const [accPass, setAccPass]           = useState('');
-  const [showPass, setShowPass]         = useState(false);
-  const [deliverErr, setDeliverErr]     = useState('');
+  const [deliveringId, setDeliveringId]     = useState<string | null>(null);
+  const [accUser, setAccUser]               = useState('');
+  const [accPass, setAccPass]               = useState('');
+  const [showPass, setShowPass]             = useState(false);
+  const [deliverErr, setDeliverErr]         = useState('');
+  const [justDelivered, setJustDelivered]   = useState<JustDelivered | null>(null);
 
   function openDeliverForm(id: string) {
     setDeliveringId(id);
+    setJustDelivered(null);
     setAccUser(''); setAccPass(''); setShowPass(false); setDeliverErr('');
   }
 
@@ -259,14 +285,20 @@ function OrdersSection({ orders, onRefresh }: { orders: Order[]; onRefresh: () =
 
     const order = orders.find(o => o.id === deliveringId)!;
 
-    /* Verify + deliver in one step */
     deliverOrder(deliveringId, accUser.trim(), accPass.trim());
 
-    /* Log the email delivery */
     addEmailLogEntry({
       orderId:         deliveringId,
       productName:     order.productName,
       customerEmail:   order.customerEmail,
+      accountUsername: accUser.trim(),
+      accountPassword: accPass.trim(),
+    });
+
+    setJustDelivered({
+      orderId:         deliveringId,
+      customerEmail:   order.customerEmail,
+      productName:     order.productName,
       accountUsername: accUser.trim(),
       accountPassword: accPass.trim(),
     });
@@ -286,6 +318,44 @@ function OrdersSection({ orders, onRefresh }: { orders: Order[]; onRefresh: () =
           {pending.length} pending · {verified.length} delivered
         </p>
       </div>
+
+      {/* ── Just-delivered Gmail banner ─────────── */}
+      {justDelivered && (
+        <div className="rounded-2xl p-4 animate-slide-down flex flex-col gap-3"
+          style={{ background: 'hsl(145 60% 40% / 0.08)', border: '2px solid hsl(145 60% 45% / 0.5)', boxShadow: '0 0 20px hsl(145 60% 40% / 0.1)' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">✅</span>
+            <div>
+              <div className="text-sm font-bold" style={{ color: 'hsl(145 70% 60%)' }}>
+                Account delivered — now send the credentials via email
+              </div>
+              <div className="text-xs mt-0.5" style={{ color: 'hsl(145 40% 50%)' }}>
+                To: <span className="font-semibold">{justDelivered.customerEmail}</span>
+                &nbsp;·&nbsp;{justDelivered.productName}
+                &nbsp;·&nbsp;{justDelivered.accountUsername} / {justDelivered.accountPassword}
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href={buildGmailLink(justDelivered)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
+              style={{ background: '#EA433518', border: '1px solid #EA433555', color: '#EA4335' }}
+            >
+              <span>✉️</span> Open Gmail & Send
+            </a>
+            <button
+              onClick={() => setJustDelivered(null)}
+              className="px-4 py-2 rounded-xl text-xs"
+              style={{ background: 'hsl(145 20% 15%)', border: '1px solid hsl(145 30% 20%)', color: 'hsl(145 30% 50%)' }}
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {orders.length === 0 ? <Empty label="No orders yet." /> : (
         <div className="flex flex-col gap-3">
@@ -313,12 +383,29 @@ function OrdersSection({ orders, onRefresh }: { orders: Order[]; onRefresh: () =
                   </div>
                 </div>
 
-                {/* Delivered credentials preview */}
+                {/* Delivered credentials + resend Gmail link */}
                 {o.accountUsername && (
-                  <div className="text-xs px-3 py-2 rounded-lg font-mono"
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-lg font-mono text-xs"
                     style={{ background: 'hsl(145 60% 40% / 0.06)', border: '1px solid hsl(145 60% 40% / 0.2)', color: 'hsl(145 70% 55%)' }}>
-                    Delivered: <span className="font-bold">{o.accountUsername}</span> / {o.accountPassword}
-                    {o.deliveredAt && <span className="ml-2 opacity-60">· {new Date(o.deliveredAt).toLocaleString()}</span>}
+                    <span>
+                      <span className="font-bold">{o.accountUsername}</span> / {o.accountPassword}
+                      {o.deliveredAt && <span className="ml-2 opacity-60">· {new Date(o.deliveredAt).toLocaleString()}</span>}
+                    </span>
+                    <a
+                      href={buildGmailLink({
+                        orderId: o.id,
+                        customerEmail: o.customerEmail,
+                        productName: o.productName,
+                        accountUsername: o.accountUsername!,
+                        accountPassword: o.accountPassword!,
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg font-sans font-semibold not-italic"
+                      style={{ background: '#EA433518', border: '1px solid #EA433555', color: '#EA4335', fontSize: '0.65rem' }}
+                    >
+                      ✉️ Resend via Gmail
+                    </a>
                   </div>
                 )}
 
@@ -369,7 +456,7 @@ function OrdersSection({ orders, onRefresh }: { orders: Order[]; onRefresh: () =
                     </button>
                   </div>
                   <p className="text-xs mt-2" style={{ color: 'hsl(270 20% 40%)' }}>
-                    This will mark the order as Verified and save a delivery record to the Email Log.
+                    Saves to Email Log. You can then send credentials via Gmail.
                   </p>
                 </div>
               )}

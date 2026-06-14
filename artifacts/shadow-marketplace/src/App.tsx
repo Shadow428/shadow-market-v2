@@ -47,6 +47,7 @@ export default function App() {
           onNavigate={handleNavigate}
           onOpenCart={() => setCartOpen(true)}
           onOpenOrders={() => setOrdersOpen(true)}
+          onLogout={() => { setUser(null); setPath('marketplace'); }}
           currentPath={path}
         />
       )}

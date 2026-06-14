@@ -11,10 +11,11 @@ interface Props {
   onNavigate: (path: 'marketplace' | 'auth' | 'admin') => void;
   onOpenCart: () => void;
   onOpenOrders: () => void;
+  onLogout: () => void;
   currentPath: string;
 }
 
-export default function Navbar({ user, cartCount, onNavigate, onOpenCart, onOpenOrders, currentPath }: Props) {
+export default function Navbar({ user, cartCount, onNavigate, onOpenCart, onOpenOrders, onLogout, currentPath }: Props) {
   const [dropOpen, setDropOpen] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +32,7 @@ export default function Navbar({ user, cartCount, onNavigate, onOpenCart, onOpen
   function handleLogout() {
     logout();
     setDropOpen(false);
-    onNavigate('marketplace');
+    onLogout();
   }
 
   const initials = user ? user.username.slice(0, 2).toUpperCase() : '?';
