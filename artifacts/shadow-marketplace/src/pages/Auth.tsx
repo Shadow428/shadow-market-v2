@@ -180,6 +180,39 @@ export default function Auth({ onAuth, onClose }: Props) {
           >
             {loading ? '...' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
+
+          {mode === 'login' && (
+            <div
+              className="rounded-xl px-4 py-3 mt-1"
+              style={{
+                background: 'hsl(270 40% 10%)',
+                border: '1px solid hsl(270 40% 20%)',
+              }}
+            >
+              <p className="text-xs font-semibold mb-2" style={{ color: 'hsl(270 60% 60%)' }}>
+                🛠️ Admin Quick Login
+              </p>
+              <p className="text-xs mb-2" style={{ color: 'hsl(270 30% 50%)' }}>
+                Email: <span style={{ color: 'hsl(270 80% 75%)' }}>admin@shadow.gg</span>
+                &nbsp;&nbsp;Password: <span style={{ color: 'hsl(270 80% 75%)' }}>admin123</span>
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('admin@shadow.gg');
+                  setPassword('admin123');
+                }}
+                className="text-xs px-3 py-1 rounded-lg transition-colors"
+                style={{
+                  background: 'hsl(270 100% 55% / 0.15)',
+                  border: '1px solid hsl(270 100% 55% / 0.35)',
+                  color: 'hsl(270 100% 75%)',
+                }}
+              >
+                Fill admin credentials
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
