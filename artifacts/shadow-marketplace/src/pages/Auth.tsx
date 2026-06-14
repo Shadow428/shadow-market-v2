@@ -1,6 +1,7 @@
 /* ──────────────────────────────────────────────────────────
-   Auth.tsx — Standalone login / signup page with
-              password show/hide toggle (hidden by default)
+   Auth.tsx — Standalone login / signup page
+   onClose is optional — shows an ✕ when provided so users
+   can dismiss and return to the marketplace.
    ────────────────────────────────────────────────────────── */
 import { useState } from 'react';
 import { login, signup, saveSession } from '@/lib/auth';
@@ -8,11 +9,12 @@ import type { User } from '@/lib/auth';
 
 interface Props {
   onAuth: (user: User) => void;
+  onClose?: () => void;
 }
 
 type Mode = 'login' | 'signup';
 
-export default function Auth({ onAuth }: Props) {
+export default function Auth({ onAuth, onClose }: Props) {
   const [mode, setMode]         = useState<Mode>('login');
   const [username, setUsername] = useState('');
   const [email, setEmail]       = useState('');
@@ -62,6 +64,18 @@ export default function Auth({ onAuth }: Props) {
           boxShadow: '0 30px 60px hsl(240 20% 2% / 0.8), 0 0 0 1px hsl(270 100% 60% / 0.06)',
         }}
       >
+        {/* ✕ close button — only shown when onClose is provided */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors z-10"
+            style={{ color: 'hsl(270 30% 55%)', background: 'hsl(270 20% 12%)' }}
+          >
+            ✕
+          </button>
+        )}
+
         {/* Header */}
         <div className="px-8 pt-8 pb-6 text-center">
           <div className="text-4xl mb-3" style={{ filter: 'drop-shadow(0 0 10px hsl(270 100% 60%))' }}>
