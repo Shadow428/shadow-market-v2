@@ -1,0 +1,147 @@
+Got it — you basically want **2 fixes**:
+
+1. ❌ Remove popup admin UI → ✅ Make it a proper **dashboard**
+2. ❌ Profile icon not visible → ✅ Make it like **Google-style top-right avatar**
+
+I’ll upgrade your prompt so the AI *forces this behavior* 👇
+
+---
+
+## 🔥 UPDATED “ANTI-GRAVITY v2” PROMPT
+
+> Build a modern marketplace web app with **black + neon green theme** and proper **role-based UI (user/admin)**.
+>
+> ---
+>
+> ## 🎨 UI STYLE (IMPORTANT)
+>
+> * Dark theme (#0a0a0a background)
+> * Neon green accents (#00ff88)
+> * Clean card UI like modern sites (similar to MangaFire layout)
+> * Smooth animations, rounded corners
+>
+> ---
+>
+> ## 🔐 AUTH SYSTEM
+>
+> * Login / Signup
+> * Users have roles:
+>
+>   * `"user"`
+>   * `"admin"`
+>
+> ---
+>
+> ## 🧠 ROLE-BASED UI (STRICT)
+>
+> ### 👤 USER:
+>
+> * Can browse and buy
+> * NO admin controls visible at all
+>
+> ### 🛠️ ADMIN:
+>
+> * Should NOT use popup modals for main control
+> * Instead create a **DEDICATED ADMIN DASHBOARD PAGE**
+>
+> ---
+>
+> ## 📊 ADMIN DASHBOARD (IMPORTANT CHANGE)
+>
+> Replace popup with:
+>
+> * A **separate dashboard layout**
+> * Sidebar or top navigation
+> * Sections:
+>
+>   * Products list
+>   * Add product form (inline or panel, NOT popup)
+>   * Edit/Delete controls
+>
+> ### ➕ Add Product UI:
+>
+> * Should be:
+>
+>   * Inline form OR slide panel
+>   * NOT a floating popup modal
+>
+> ---
+>
+> ## 👤 PROFILE UI FIX (VERY IMPORTANT)
+>
+> * Add a **profile avatar circle in top-right corner**
+> * MUST always be visible (mobile + desktop)
+> * Style it like:
+>
+>   * Google account icon (top-right)
+>   * Small circular avatar
+>
+> ### On Click:
+>
+> * Open dropdown menu:
+>
+>   * Profile
+>   * Logout
+>   * (If admin → "Go to Dashboard")
+>
+> ---
+>
+> ## 📱 MOBILE FIX (CRITICAL)
+>
+> * Profile icon MUST NOT disappear on mobile
+> * Use:
+>
+>   * Flexbox navbar
+>   * Keep avatar always pinned right
+>
+> ---
+>
+> ## 🧭 NAVBAR
+>
+> * Left: Logo
+> * Right:
+>
+>   * Profile avatar (ALWAYS visible)
+>
+> ---
+>
+> ## 🛍️ MAIN PAGE
+>
+> * Product grid like MangaFire cards
+> * Clean spacing
+> * Hover effects
+>
+> ---
+>
+> ## 🚫 STRICT RULES
+>
+> * NO admin popup UI
+> * Admin panel MUST be a page/dashboard
+> * Profile icon MUST always be visible
+> * Admin features MUST be hidden from users completely
+>
+> ---
+>
+> ## ⚙️ TECH (if coding)
+>
+> * React / Next.js
+> * Use conditional rendering based on role
+> * Clean component structure
+
+---
+
+## 💡 Extra (real advice, not prompt)
+
+Your current issue:
+
+* Popup = lazy UI generation by AI
+* Missing profile icon = bad responsive layout
+
+This prompt **forces structure instead of shortcuts**
+
+---
+
+If you want next step, I can:
+
+* Give you **actual React code for navbar + avatar (Google style)**
+* Or build a **full admin dashboard layout UI for you**
