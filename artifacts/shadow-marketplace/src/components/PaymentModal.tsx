@@ -90,9 +90,30 @@ export default function PaymentModal({ product, customerEmail, onClose, onSucces
                 style={{ background: 'hsl(200 60% 50% / 0.06)', border: '1px solid hsl(200 60% 50% / 0.2)', color: 'hsl(200 60% 65%)' }}>
                 📧 Receipt will be sent to <span className="font-semibold">{customerEmail}</span>
               </div>
-              <p className="text-xs text-center" style={{ color: 'hsl(270 30% 50%)' }}>
-                Scan with PhonePe, GPay, Paytm, etc.
-              </p>
+              {/* App buttons */}
+              <div className="w-full">
+                <p className="text-xs text-center mb-2" style={{ color: 'hsl(270 30% 50%)' }}>
+                  Scan above <span style={{ color: 'hsl(270 30% 40%)' }}>or tap to open app directly</span>
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { name: 'GPay',     color: '#4285F4', emoji: '🔵', scheme: `tez://upi/pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${product.price}&cu=INR&tn=${encodeURIComponent('Shadow Marketplace - ' + product.name)}` },
+                    { name: 'PhonePe',  color: '#6739B7', emoji: '🟣', scheme: `phonepe://pay?transactionId=SM${Date.now()}&amount=${product.price * 100}&pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}` },
+                    { name: 'Paytm',    color: '#00BAF2', emoji: '🔷', scheme: `paytmmp://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${product.price}&cu=INR` },
+                  ].map(app => (
+                    <a key={app.name} href={app.scheme}
+                      className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                      style={{ background: `${app.color}18`, border: `1px solid ${app.color}44`, color: app.color }}
+                    >
+                      <span className="text-lg">{app.emoji}</span>
+                      {app.name}
+                    </a>
+                  ))}
+                </div>
+                <p className="text-xs text-center mt-2" style={{ color: 'hsl(270 20% 35%)' }}>
+                  App buttons work on mobile · QR works everywhere
+                </p>
+              </div>
               <button onClick={() => setStep('txid')} className="btn-primary w-full py-3 rounded-xl text-base">
                 I've Paid →
               </button>
